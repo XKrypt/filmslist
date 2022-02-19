@@ -1,5 +1,13 @@
 import axios from "axios";
 
+export const trendingFilters = {
+    popular:"popular",
+    trending: "trending",
+    mostWatched: "watched/weekly"
+
+}
+
+
 export const apiInstance = axios.create({
     baseURL : "https://api.trakt.tv",
     headers : {

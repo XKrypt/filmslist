@@ -3,7 +3,7 @@ import { apiInstance } from "../axios/api";
 
 const initialState = {
     isPending: true,
-    films : null
+    filmsData : null
 }
 const actionFetching = "TRENDING_FETCH_FETCHING"
 
@@ -32,7 +32,7 @@ const filmsSlice = createSlice({
 
            return {
                 isPending : false,
-                films : action.payload
+                filmsData : action.payload
             }
         }
       }
