@@ -1,18 +1,24 @@
 import { useEffect } from "react";
-import { View, Text } from "react-native";
-import { FlatList, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { fetchfilms } from "../../../redux/actions";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { HomeView, TrendingButton, Trendings, TrendingButtonTitle, FilmCard, FlatListContainer, FilmImage, FilmTitle } from "./styles";
+import {
+    HomeView,
+    TrendingButton,
+    Trendings,
+    TrendingButtonTitle,
+    FlatListContainer,
+    FilmsListCards
+} from '../../components/styles';
 import { useState } from "react";
 import { trendingFilters } from "../../../axios/api";
+import { FilmItem } from "../../components/film-item";
+import { ActivityIndicator } from "react-native";
 
 
 export function Home() {
-    const dataTest = useSelector((state) => state.films)
+    const filmsData = useSelector((state) => state.films)
     const dispatch = useDispatch();
 
     const [filters, setFilters] = useState({
@@ -21,6 +27,9 @@ export function Home() {
         mostWatched: false
 
     });
+
+
+    const [currentFilter, setCurrentFilter] = useState(trendingFilters.trending);
 
     function resetFilters() {
         let copyFilters = filters;
@@ -33,29 +42,38 @@ export function Home() {
     //Muda a cor dos filtros da home, assim o usuario sabe qual o selecionado
     function changeActiveFilter(filter) {
 
+        //Reseta todos so filtros para false 
         resetFilters();
+
         let copyFilters = { ...filters };
 
         copyFilters[filter] = true;
 
         setFilters(copyFilters);
-        loadTrending(filter);
+        setCurrentFilter(filter);
+        loadFilms(filter);
     }
 
-    function loadTrending(filter) {
+    function loadFilms(filter) {
+        
         dispatch(fetchfilms(trendingFilters[filter]))
     }
 
     useEffect(() => {
-        dispatch(fetchfilms(trendingFilters.trending))
-        console.log(dataTest.filmsData)
+        
+        dispatch(fetchfilms(trendingFilters[currentFilter]))
     }, [])
+
+
+
+
 
     return (
         <HomeView>
 
             {/* Filtros  */}
             <Trendings>
+
                 <TrendingButton onPress={() => changeActiveFilter("trending")} active={filters.trending}>
                     <TrendingButtonTitle  >Em alta</TrendingButtonTitle>
                 </TrendingButton>
@@ -71,7 +89,7 @@ export function Home() {
 
             </Trendings>
 
-
+            
             {/* Lista de filmes */}
             <FlatListContainer>
                 <SafeAreaView>
@@ -84,38 +102,31 @@ export function Home() {
                 a propriedade.
                 
                 */}
-                    <FlatList
+                {
+                    filmsData.pending ? 
+                    <ActivityIndicator size="large"  color="#FFF"/>
+                    :
+                    <FilmsListCards
 
                         bounces={false}
-                        data={dataTest.filmsData}
+                        data={filmsData.filmsData}
 
-                        renderItem={(item) => {
-                            return (
-                                <FilmCard>
-                                    <FilmImage>
-                                        <MaterialCommunityIcons name="film" size={72} color="white" />
-                                    </FilmImage>
-                                    <FilmTitle>{
+                        renderItem={(item) => (<FilmItem filmTitle={
 
-                                        //Os filmes populares não tem a propriedade movie
-                                        filters.popular ?
-                                            item.item.title :
-                                            item.item.movie.title
-                                    }
-
-                                    </FilmTitle>
-                                </FilmCard>
-                            )
-                        }}
+                            //Os filmes populares não tem a propriedade movie
+                            filters.popular ?
+                                item.item.title :
+                                item.item.movie?.title
+                                
+                        } />)}
 
                         keyExtractor={
-                            item =>
-                                filters.popular ?
-                                    item.tmdb :
-                                    item.movie.tmdb
+                            item => item.key
                         }
 
                     />
+                }
+                    
 
 
 
@@ -124,18 +135,3 @@ export function Home() {
         </HomeView>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        height: 200
-    },
-    item: {
-        backgroundColor: '#f9c2ff',
-        padding: 20,
-        marginVertical: 8,
-        marginHorizontal: 16,
-    },
-    title: {
-        fontSize: 32,
-    },
-});
