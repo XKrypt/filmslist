@@ -7,7 +7,6 @@ export const trendingFilters = {
 
 }
 
-
 export const apiInstance = axios.create({
     baseURL : "https://api.trakt.tv",
     headers : {
